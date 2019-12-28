@@ -2,9 +2,9 @@ $(document).ready(function() {
 
     $.ajaxSetup({ cache: false });
 
-    Unit.preload('../../json/units.json', function() {
+    Unit.preload('json/units.json', function() {
 
-        $.getJSON('./../../examples/example-bo-1.json', function(json) {
+        $.getJSON('examples/example-bo-1.json', function(json) {
             let i = 0;
 
             const bo = BuildOrder.fromJSON(json);
