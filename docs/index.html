@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <title></title>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+
+    <style>
+        @font-face {
+            font-family: StarcraftNormal;
+            src: url("assets/Starcraft Normal.ttf");
+        }
+
+        * {
+            font-family: StarcraftNormal;
+            font-size: 0.98em;
+        }
+    </style>
+  </head>
+  <body>
+
+
+    <!-- Optional JavaScript -->
+    <!-- jQuery first, then Popper.js, then Bootstrap JS -->
+    <script src="https://code.jquery.com/jquery-3.4.1.min.js" integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo=" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
+    <script src="vendor/sorted-array.js"></script>
+    <script src="libbuildorder/type-checker.js"></script>
+    <script src='libbuildorder/observer.js'></script>
+    <script src="libbuildorder/action.js"></script>
+    <script src="libbuildorder/build.js"></script>
+    <script src="libbuildorder/build-order.js"></script>
+    <script src="libbuildorder/json.js"></script>
+    <script src='libbuildorder/race.js'></script>
+    <script src='libbuildorder/time.js'></script>
+    <script src='libbuildorder/unit.js'></script>
+    <script src='libbuildorder/view.js'></script>
+    <script src='libbuildorder/simulation.js'></script>
+    <script data-main='main' src='vendor/require.js'></script>
+
+    <div class='container'>
+        <div class='row'>
+            <div class='col'>
+                <div>BO</div>
+            </div>
+        </div>
+        <div class="row mt-4">
+            <div class="col" id="timeline">
+
+                <!-- Percent slider, 'max' highest value to have maximum precision (can be approximative to < one second) -->
+                <!-- Also have less range is easier for input at keyboard, because arrows will move by one
+                     If max is ten million, keyboard press will do nothin and we will must wait a very long time to see a modification
+                -->
+                <div>Time: <span class="time"></span></div>
+                <div>Minerals: <span class="mineral"></span></div>
+                <div>Gas: <span class="gas"></span></div>
+                <div>Harvesters at mineral: <span class="mineral_harvesters"></span></div>
+                <div>Harvesters at gas: <span class="gas_harvesters"></span></div>
+                <div>Suply: <span class="supply"></span>/<span class="max_supply"></span></div>
+                <input type="range" min="0" max="100" class="w-100">
+            </div>
+        </div>
+        <div class='row'>
+            <div class='col'>
+                <table class='table table-dark' style="table-layout: fixed;"></table>
+            </div>
+        </div>
+        <div class='row'>
+            <div class='col'>
+                <form class='form bo-form-add-unit'>
+                    Add:
+                    <select class='bo-unit' name='unit'>
+                    </select>
+                    From:
+                    <select class='bo-row' name='row'>
+                    </select>
+                    At:
+                    <input type="number" placeholder="minuts" min="0" max="30" step="1" name="minuts">
+                    :
+                    <input type="number" placeholder="seconds" min="0" max="59" step="1" name="seconds">
+                    <input type="submit">
+                </form>
+            </div>
+        </div>
+    </div>
+  </body>
+</html>
