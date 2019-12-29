@@ -1,4 +1,5 @@
-"use strict";
+export { TERRAN, PROTOSS, ZERG, isRace };
+
 /**
  * enum-like (javascript...) Race
  */

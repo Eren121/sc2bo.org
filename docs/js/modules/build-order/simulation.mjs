@@ -1,3 +1,5 @@
+export { Event, StartActionEvent, CompletedActionEvent, Simulation };
+
 /**
  * A build order is static, it's data that don' change
  * The simulation will follow a Build Order
@@ -192,23 +194,34 @@ class Simulation {
          *  - supply <= supplyCap
          */
         let rate;
-
-        if(this.mineral_harvesters <= 16) {
-            rate = 45.0 / 60.0;
-        } else {
-            rate = 40.0 / 60.0;
-        }
-
-        this.mineral += this.mineral_harvesters * rate; // A mineral worker 40. min. per minute
-        this.gas += this.gas_harvesters * (38.0 / 60.0); // A gas worker 38. gaz per minute
-
         
         // Updates actions: check if another action is available
         // And if current next action is at this point of time
+        // Consider all actions are down when second start
+        // And income is added at the end of the second
 
         while((e = this._pollEvent()) !== null) {
             e.trigger(this);
         }
+
+        if(this.mineral_harvesters <= 16) {
+            rate = 45.0 / 60.0;
+            rate = 0.85;
+        } else {
+            rate = 40.0 / 60.0;
+        }
+
+        // https://liquipedia.net/starcraft2/Resources
+        // https://tl.net/forum/starcraft-2/501306-comprehensive-lotv-production-spreadsheet
+        const gasRate = 0.89;
+
+        this.mineral += this.mineral_harvesters * rate; // A mineral worker 40. min. per minute
+        this.gas += this.gas_harvesters * gasRate; // A gas worker 38. gaz per minute
+
+
+        // Mules = count of Orbital Commands
+        const countOfOrbitals = this.units.filter(u => u === "Orbital Command").length;
+        this.mineral += countOfOrbitals * rate * 3.75;
         
         // Update time
 

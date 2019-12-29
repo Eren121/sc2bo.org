@@ -1,4 +1,3 @@
-"use strict";
 /**
  * Build Order serialisation/deserialisation from and to JSON utility
  */

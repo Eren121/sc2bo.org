@@ -1,3 +1,6 @@
+import { BuildOrder, Unit } from './build-order/build-order.mjs';
+import { Simulation } from './build-order/simulation.mjs';
+
 $(document).ready(function() {
 
     $.ajaxSetup({ cache: false });
@@ -14,7 +17,7 @@ $(document).ready(function() {
             Unit.loadInto($('.bo-unit'));
 
             bo.subscribe('change', function() {
-                $('#timeline input[type=range]')
+                $('#timeline-slider-range')
                     .attr('max', bo.duration())
                     .change(); // Force update simulation info.
             });
@@ -52,6 +55,11 @@ $(document).ready(function() {
                 }
             });
 
+            $('.bo-form-add-unit').on('reset', function(e) {
+                e.preventDefault();
+                bo.clear();
+            });
+
             // When add an unit, verify the conditions before adding it.
             $('.bo-form-add-unit').submit(function(e) {
                 let i;
@@ -61,40 +69,67 @@ $(document).ready(function() {
                                 (parseInt($(this).find('[name=seconds]').val()) || 0);
                 let ok = false;
 
-                console.log(time);
-
                 // Don't submit form
                 e.preventDefault();
 
-                // Run simulation until desired time and check if it is possible                        
-                simulation.goToSecond(time);
+                // Can be NaN if no row selected (because no row available for this unit)
+                if(!isNaN(row)) {
 
-                if(simulation.hasEnoughResourcesForUnit(unit)) {
-                    // Enough resources but didn't checked if there is a building
-                    // Check now if there is an avalaible building
-                    // This now depend not on the simulation but on the build order
-                    // The difference is that the simulation is not exact, but the timing can be known exactly
-                    // And we can know if the queue is empty.
+                    // Run simulation until desired time and check if it is possible                        
+                    simulation.goToSecond(time);
 
-                    /* row = -1 => unit is built in a new row */
-                    if(row === -1) {
-                        bo.addAction(new Build(time, unit.getName()));
-                        ok = true;
-                    } else {
+                    if(simulation.hasEnoughResourcesForUnit(unit)) {
+                        // Enough resources but didn't checked if there is a building
+                        // Check now if there is an avalaible building
+                        // This now depend not on the simulation but on the build order
+                        // The difference is that the simulation is not exact, but the timing can be known exactly
+                        // And we can know if the queue is empty.
 
-                        // Check there is space to produce the unit at this point of time
-                        if(bo.getActions()[row].isEmptySpaceBetween(time, time + unit.getCost().time)) {
-                            bo.getActions()[row].addAction(new Build(time, unit.getName()));
+                        /* row = -1 => unit is built in a new row */
+                        if(row === -1) {
+                            bo.addAction(new Build(time, unit.getName()));
                             ok = true;
-                        }
-                    }                            
+                        } else {
+
+                            // Check there is space to produce the unit at this point of time
+                            if(bo.getActions()[row].isEmptySpaceBetween(time, time + unit.getCost().time)) {
+                                bo.getActions()[row].addAction(new Build(time, unit.getName()));
+                                ok = true;
+                            }
+                        }                            
+                    }
                 }
                 
                 if(ok) {
                     bo.notify('change');
                 }
                 else {
-                    alert("can't");
+
+                    // If can't, check nex time when it's available. Search only on 5 minutes...
+
+                    for(i = 0; i < 5 * 60 && !ok; i++) {
+                        simulation.advanceToNextSecond();
+
+                        if(simulation.hasEnoughResourcesForUnit(unit)) {
+                            if(row === -1) {
+                                ok = true;
+                            } else {
+                                if(bo.getActions()[row].isEmptySpaceBetween(simulation.time, simulation.time + unit.getCost().time)) {
+                                    ok = true;
+                                }
+                            }                            
+                        }
+                    }
+
+                    if(ok) {
+                        $('#next-time-avalaible').text('Next time available').show();
+                        $('.bo-form-add-unit')
+                            .find('[name=minuts]').val(Math.floor(simulation.time / 60)).end()
+                            .find('[name=seconds]').val(simulation.time % 60).end()
+                        ;
+                    } else {
+                        $('#next-time-avalaible').text('Not possible').show();
+                    }
                 }
             })
 
@@ -104,7 +139,7 @@ $(document).ready(function() {
 
 
             /* Slider for the timing of the simulation */
-            $('#timeline input[type=range]').change(function(e) {
+            $('#timeline-slider-range').change(function(e) {
                 const time = parseInt($(this).val());
 
                 simulation.goToSecond(time);

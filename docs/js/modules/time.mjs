@@ -1,4 +1,5 @@
-"use strict";
+export { formatTime, parseTime };
+
 /**
  * Format input integer seconds to mm:ss format.
  */

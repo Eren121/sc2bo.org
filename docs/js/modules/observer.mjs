@@ -1,7 +1,8 @@
+export { Observable };
+
 /**
  * Observer pattern
  */
-
 class Observable {
     constructor() {
         abstract(new.target, Observable);

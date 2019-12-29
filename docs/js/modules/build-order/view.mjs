@@ -1,4 +1,5 @@
-"use strict";
+export { BuildOrderView };
+
 /**
  *  Render a Build Order into a HTML view
  * Use <table> element
@@ -25,6 +26,8 @@ class BuildOrderView {
      * </table>
      **/
     renderInto($table) {
+        this.maxTime = this.bo.duration();
+
         const $thead = $('<thead>');
         const $tbody = $('<tbody>');
 
@@ -98,8 +101,24 @@ class BuildOrderView {
                 .attr('rowspan', 1)
                 //.text(action.getDescription())
                 .addClass(action instanceof Build ? 'bg-success' : 'bg-info')
-                .addClass('rounded-pill')
+                .addClass('rounded-pill overflow-hidden')
                 ;
+            
+            // Add remove Icon
+            //$td.attr('data-uuid', action.uuid);
+
+            $td.append(
+
+                $(`
+                <button type="button" class="close" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+                `)
+                
+                    .click(function() {
+                        this.bo.removeAction(action);
+                    })
+            );
 
             if(action instanceof Build) {
                 // Add icon if Action is Build
@@ -124,7 +143,7 @@ class BuildOrderView {
 
                 if(action.getCount() > 1) {
                     $td.append($('<div>')
-                        .addClass('figure')
+                        .addClass('figure small')
                         .text('x' + action.getCount()));
                 }
             }

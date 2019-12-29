@@ -46,7 +46,7 @@
         "type": "gas",
         "cost": {
             "mineral": 75,
-            "time": 18
+            "time": 21
         }
     },
     {

@@ -1,4 +1,5 @@
-"use strict";
+export { Build };
+
 /**
  * Represent a Build production chain like queued units.
  * But the queue do not represent the in-game real queue, with a maximum of 5
@@ -9,7 +10,7 @@
 class Build extends Action {
     #unit = "";
     #count = 1;
-    #actions = []; // Build recursively
+    _actions = []; // Build recursively
     #isMain = false;
 
     constructor(time, unit, count = 1) {
@@ -19,7 +20,7 @@ class Build extends Action {
     }
 
     getActions() {
-        return this.#actions;
+        return this._actions;
     }
 
     // Return if this building represent the main building
@@ -33,6 +34,7 @@ class Build extends Action {
     setIsMain(isMain = true) {
         as(isMain, Boolean);
         this.#isMain = isMain;
+        return this;
     }
 
     getUnit() { return Unit.fromName(this.#unit); }
@@ -53,15 +55,15 @@ class Build extends Action {
 
     addAction(action) {
         as(action, Action);
-        this.#actions.push(action);
+        this._actions.push(action);
     }
 
     getCompleteTiming() {
         let d = this.getTime() + this.getDuration();
         let i, tmp;
 
-        for(i = 0; i < this.#actions.length; i++) {
-            tmp = this.#actions[i].getCompleteTiming();
+        for(i = 0; i < this._actions.length; i++) {
+            tmp = this._actions[i].getCompleteTiming();
             if(tmp > d) {
                 d = tmp;
             }
@@ -165,14 +167,14 @@ class Build extends Action {
 
         // We assume that the timeline can be not sorted so no short-circuit
 
-        for(i = 0; i < this.#actions.length; i++) {
-            a = this.#actions[i];
+        for(i = 0; i < this._actions.length; i++) {
+            a = this._actions[i];
 
             if(a instanceof Build) {
 
                 // 1D time segment collision
                 // https://eli.thegreenplace.net/2008/08/15/intersection-of-1d-segments
-                if(max >= a.getTime() && a.getTime() + a.getDuration() >= min) {
+                if(max > a.getTime() && a.getTime() + a.getDuration() > min) {
                     return false;
                 }
             }

@@ -1,4 +1,7 @@
-"use strict";
+export { BuildOrder, Unit };
+import { Observable } from '../observer.mjs';
+import { Unit } from './unit.mjs';
+
 /**
  * Representation of a Build Order:
  * The build order is represented recursively in a tree, and this class contains
@@ -7,12 +10,12 @@
  * add-ons and main start building.
  */
 class BuildOrder extends Observable {
-    #name = "";
-    #author = "";
-    #date = new Date();
-    #race = TERRAN;
-    #type = "";
-    #actions = []; // First level of the build, unit that need no other buildings
+    _name = "";
+    _author = "";
+    _date = new Date();
+    _race = TERRAN;
+    _type = "";
+    _actions = []; // First level of the build, unit that need no other buildings
                    // to be created
                    // (or actions)
 
@@ -27,46 +30,60 @@ class BuildOrder extends Observable {
     }
 
     getName() {
-        return this.#name;
+        return this._name;
     }
 
     getAuthor() {
-        return this.#author;
+        return this._author;
     }
 
     getDate() {
-        return this.#date;
+        return this._date;
     }
 
     getRace() {
-        return this.#race;
+        return this._race;
     }
 
     getType() {
-        return this.#type;
+        return this._type;
     }
 
     getActions() {
-        return this.#actions;
+        return this._actions;
+    }
+
+    /* Clear to a blank build order */
+    clear() {
+        this._actions = [];
+
+        // Main production building
+        this._actions.push(new Build(0, "Command Center").setIsMain());
+
+        this.notify('change');
     }
 
     addAction(action) {
         as(action, Action);
-        this.#actions.push(action);
+        this._actions.push(action);
+    }
+
+    removeAction(action) {
+        
     }
 
     setName(name) {
         as(name, String);
-        this.#name = name;
+        this._name = name;
     }
 
     setAuthor(author) {
         as(author, String);
-        this.#author = author;
+        this._author = author;
     }
     setDate(date) {
         as(date, Date);
-        this.#date = date;
+        this._date = date;
     }
 
     setRace(race) {
@@ -74,12 +91,12 @@ class BuildOrder extends Observable {
             throw new TypeError("race is not an instance of Race");
         }
 
-        this.#race = race;
+        this._race = race;
     }
 
     setType(type) {
         as(type, String);
-        this.#type = type;
+        this._type = type;
     }
 
     /**
@@ -95,8 +112,8 @@ class BuildOrder extends Observable {
         let actions;
         let action;
 
-        for(i = 0; i < this.#actions.length; i++) {
-            build = this.#actions[i];
+        for(i = 0; i < this._actions.length; i++) {
+            build = this._actions[i];
             actions = build.getActions();
 
             if(actions.length === 1) {
@@ -120,8 +137,8 @@ class BuildOrder extends Observable {
      */
     duration() {
         let i, d = 0, tmp;
-        for(i = 0; i < this.#actions.length; i++) {
-            tmp = this.#actions[i].getCompleteTiming();
+        for(i = 0; i < this._actions.length; i++) {
+            tmp = this._actions[i].getCompleteTiming();
             if(tmp > d) {
                 d = tmp;
             }
@@ -142,8 +159,8 @@ class BuildOrder extends Observable {
         let i;
         let a;
 
-        for(i = 0; i < this.#actions.length; i++) {
-            a = this.#actions[i];
+        for(i = 0; i < this._actions.length; i++) {
+            a = this._actions[i];
             this._visitAction(a, callback);
         }
     }

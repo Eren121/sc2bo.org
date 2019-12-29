@@ -1,4 +1,5 @@
-"use strict";
+export { Action };
+
 /**
  * Represent an Action in the Build Order:
  * Can be remove units from gaz, build an unit,
@@ -9,6 +10,7 @@ class Action {
 
     constructor(time) {
         abstract(new.target, Action);
+        this.uuid = UUID.next();
 
         this.setTime(time);
     }
@@ -44,37 +46,3 @@ class Action {
     started(simulation) {}
     completed(simulation) {}
 }
-
-/////////////// Special actions /////////////////////
-
-class Lift extends Action {
-    constructor(time) {
-        super(time);
-    }
-
-    getDescription() {
-        return "Lift";
-    }
-}
-
-class Land extends Action {
-    #unit;
-
-    constructor(time, unit) {
-        super(time);
-        this.setUnit(unit);
-    }
-
-    getUnit() { return this.#unit; }
-
-    setUnit(unit) {
-        as(unit, String);
-        this.#unit = unit;
-    }
-
-    getDescription() {
-        return "Land";
-    }
-}
-
-/////////////////////////////////////////////////////

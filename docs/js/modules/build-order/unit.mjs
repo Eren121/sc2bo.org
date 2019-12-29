@@ -1,14 +1,10 @@
-"use strict";
+export { UNITS, Unit };
+import { as, abstract } from '../type-checker.mjs';
+
 // All units that must be loaded into the database of available units
 const UNITS = {};
 
 class Unit {
-    #name;
-    #race;
-    #type;
-    #cost;
-    #parent;
-
     constructor(name, race, type, cost, parent) {
         as(name, String);
         as(race, Race);
@@ -17,30 +13,30 @@ class Unit {
         as(cost.time, Number);
         as(parent, String);
 
-        this.#name = name;
-        this.#race = race;
-        this.#type = type;
-        this.#cost = cost;
-        this.#parent = parent;
+        this._name = name;
+        this._race = race;
+        this._type = type;
+        this._cost = cost;
+        this._parent = parent;
 
-        if(this.#cost.mineral === undefined) {
-            this.#cost.mineral = 0;
+        if(this._cost.mineral === undefined) {
+            this._cost.mineral = 0;
         }
-        if(this.#cost.gas === undefined) {
-            this.#cost.gas = 0;
+        if(this._cost.gas === undefined) {
+            this._cost.gas = 0;
         }
-        if(this.#cost.supply === undefined) {
-            this.#cost.supply = 0;
+        if(this._cost.supply === undefined) {
+            this._cost.supply = 0;
         }
     }
 
-    getName() { return this.#name; }
-    getRace() { return this.#race; }
-    getType() { return this.#type; }
-    getCost() { return this.#cost; }
+    getName() { return this._name; }
+    getRace() { return this._race; }
+    getType() { return this._type; }
+    getCost() { return this._cost; }
 
-    hasParent() { return this.#parent !== ''; }
-    getParent() { return Unit.fromName(this.#parent); }
+    hasParent() { return this._parent !== ''; }
+    getParent() { return Unit.fromName(this._parent); }
 
     static fromName(name) {
         as(name, String);

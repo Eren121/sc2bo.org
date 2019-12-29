@@ -1,4 +1,4 @@
-"use strict";
+export { Race, as, abstract };
 
 class Race {}
 
