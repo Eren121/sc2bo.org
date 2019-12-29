@@ -35,9 +35,8 @@ function main(bo) {
         $('#timeline-slider-range')
             .attr('max', bo.duration())
             .change(); // Force update simulation info.
-    });
 
-    bo.subscribe('change', function() {
+        $('.bo-unit').change(); // Force update avalaible units.
         view.renderInto($('table'));
     });
 
@@ -88,31 +87,29 @@ function main(bo) {
         e.preventDefault();
 
         // Can be NaN if no row selected (because no row available for this unit)
-        if(!isNaN(row)) {
+        if(isNaN(row)) {
+            return;
+        }
 
-            // Run simulation until desired time and check if it is possible                        
-            simulation.goToSecond(time);
+        if(simulation.hasEnoughResourcesForUnit(unit, time)) {
+            // Enough resources but didn't checked if there is a building
+            // Check now if there is an avalaible building
+            // This now depend not on the simulation but on the build order
+            // The difference is that the simulation is not exact, but the timing can be known exactly
+            // And we can know if the queue is empty.
 
-            if(simulation.hasEnoughResourcesForUnit(unit)) {
-                // Enough resources but didn't checked if there is a building
-                // Check now if there is an avalaible building
-                // This now depend not on the simulation but on the build order
-                // The difference is that the simulation is not exact, but the timing can be known exactly
-                // And we can know if the queue is empty.
+            /* row = -1 => unit is built in a new row */
+            if(row === -1) {
+                bo.addAction(new Build(time, unit.getName()));
+                ok = true;
+            } else {
 
-                /* row = -1 => unit is built in a new row */
-                if(row === -1) {
-                    bo.addAction(new Build(time, unit.getName()));
+                // Check there is space to produce the unit at this point of time
+                if(bo.getActions()[row].isEmptySpaceBetween(time, time + unit.getCost().time)) {
+                    bo.getActions()[row].addAction(new Build(time, unit.getName()));
                     ok = true;
-                } else {
-
-                    // Check there is space to produce the unit at this point of time
-                    if(bo.getActions()[row].isEmptySpaceBetween(time, time + unit.getCost().time)) {
-                        bo.getActions()[row].addAction(new Build(time, unit.getName()));
-                        ok = true;
-                    }
-                }                            
-            }
+                }
+            }                            
         }
         
         if(ok) {
@@ -123,17 +120,17 @@ function main(bo) {
             // If can't, check nex time when it's available. Search only on 5 minutes...
 
             for(i = 0; i < 5 * 60 && !ok; i++) {
-                simulation.advanceToNextSecond();
+                if(simulation.hasEnoughResourcesForUnit(unit, time + i)) {
 
-                if(simulation.hasEnoughResourcesForUnit(unit)) {
                     if(row === -1) {
                         ok = true;
                     } else {
                         if(bo.getActions()[row].isEmptySpaceBetween(simulation.time, simulation.time + unit.getCost().time)) {
                             ok = true;
                         }
-                    }                            
+                    }
                 }
+
             }
 
             if(ok) {

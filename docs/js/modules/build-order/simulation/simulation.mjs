@@ -30,10 +30,41 @@ export default class Simulation {
      * Return true, if is it possible to build an unit at this point of time
      * Regarding the supply count and the resources
      * Don't regard if there is an avalaible building if it's produced from a building
+     * 
+     * AND check if the build order is not broken after adding this production:
+     * for example, we can have enough resources but another building should have been built just after this one.
+     * But the resources are no more avalaible: so we need to see at each time, until the end of the build order, if the build order is still consistent.
      */
-    hasEnoughResourcesForUnit(unit) {
-        let ok = false;
+    hasEnoughResourcesForUnit(unit, time) {
+        let ok = true;
+
+        // Run simulation until desired time and check if it is possible                        
+        this.goToSecond(time);
+
+        if(!this.hasCurrentlyEnoughFor(unit)) {
+            return false;
+        }
+
+        // Test with removing resources and then checking if build order is o.k.
+        this.removeResourcesFor(unit);
+
+        while(ok && !this.isCompleted()) {
+            this.advanceToNextSecond();
+
+            if(!this.isCurrentlyConsistent()) {
+                ok = false;
+            }
+        }
+
+        this.goToSecond(time); // Reset to time requested
+        
+        return ok;
+    }
+
+    /* Check has enough resource at the current time */
+    hasCurrentlyEnoughFor(unit) {
         const cost = unit.getCost();
+        let ok = false;
 
         if(this.mineral >= cost.mineral && this.gas >= cost.gas) {
             // Enough resources, check if enough supply
@@ -46,17 +77,48 @@ export default class Simulation {
         return ok;
     }
 
+    removeResourcesFor(unit) {
+        const cost = unit.getCost();
+
+        this.mineral -= cost.mineral;
+        this.gas -= cost.gas;
+        
+        if(cost.supply >= 0) {
+            this.supply += cost.supply;
+        } else {
+            this.max_supply += -cost.supply;
+        }
+    }
+
+    /* Check if the build order is possible in game at this point of time */
+    isCurrentlyConsistent() {
+        return this.mineral >= 0
+            && this.gas >= 0
+            && this.supply <= this.max_supply;  
+    }
+
     /**
      * Reset simulation until second is reached
      */
     goToSecond(s) {
         as(s, Number);
         let i;
+        let e;
         
         this.start();
     
         for(i = 0; i < s; i++) {
             this.advanceToNextSecond();
+        }
+
+        if(s === 0) {
+            // If second is zero, the event are not removed from the queue
+            // Cause problem with isCompleted() when the build order is empty
+            // isCompleted() should return true but returns false because the main building is considered in construction
+
+            while((e = this._pollEvent()) !== null) {
+                e.trigger(this);
+            }
         }
     }
 
