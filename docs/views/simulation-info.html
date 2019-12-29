@@ -1,0 +1,58 @@
+<div class="form">
+    <p class="form-group">
+        <div>Time: {{ time }}</div>
+        <div>Minerals:
+            
+            {{ #negative_mineral }}
+                <span class="text-danger">{{ mineral }}</span>
+            {{ /negative_mineral }}
+
+            {{ ^negative_mineral }}
+                {{ mineral }}
+            {{ /negative_mineral }}
+
+        </div>
+
+        <div>
+            Income: {{ mineral_income }}
+        </div>
+
+        <div>Gas:
+            
+            {{ #negative_gas }}
+                <span class="text-danger">{{ gas }}</span>
+            {{ /negative_gas }}
+
+            {{ ^negative_gas }}
+                {{ gas }}
+            {{ /negative_gas }}
+
+        </div>
+
+        
+        <div>Harvesters at mineral: {{ mineral_harvesters }}</div>
+        <div>Harvesters at gas: {{ gas_harvesters }}</div>
+
+
+        <div>Suply:
+        
+            {{ #exceed_supply }}
+                <span class="text-danger">{{ supply }}/{{ max_supply }}</span>
+            {{ /exceed_supply }}
+
+            {{ ^exceed_supply }}
+
+                {{ #supply_limit }}
+                    <span class="text-warning">{{ supply }}/{{ max_supply }}</span>
+                {{ /supply_limit }}
+
+                {{ ^supply_limit }}
+                    {{ supply }}/{{ max_supply }}
+                {{ /supply_limit }}
+
+            {{ /exceed_supply }}
+        
+        </div>
+    </p>
+</div>
+</div>

@@ -1,4 +1,5 @@
 export { formatTime, parseTime };
+import { as, abstract } from './type-checker.mjs';
 
 /**
  * Format input integer seconds to mm:ss format.

@@ -1,5 +1,5 @@
 export { Observable };
-
+import { abstract } from './type-checker.mjs';
 /**
  * Observer pattern
  */

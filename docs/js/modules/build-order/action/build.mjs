@@ -1,4 +1,8 @@
-export { Build };
+import ActionFactory from './factory.mjs';
+import Action from './action.mjs';
+import { parseTime } from '../../time.mjs';
+import { as, abstract } from '../../type-checker.mjs';
+import Unit from '../unit.mjs';
 
 /**
  * Represent a Build production chain like queued units.
@@ -7,11 +11,11 @@ export { Build };
  * It represent all of the units created from within this unit from begining of
  * the build order to the end of the build order.
  */
-class Build extends Action {
-    #unit = "";
-    #count = 1;
+export default class Build extends Action {
+    _unit = "";
+    _count = 1;
     _actions = []; // Build recursively
-    #isMain = false;
+    _isMain = false;
 
     constructor(time, unit, count = 1) {
         super(time);
@@ -28,29 +32,29 @@ class Build extends Action {
     // If yes, the complete time remain zero if there is no action
     // even if building time is not zero because it is instantly here.
     isMain() {
-        return this.#isMain;
+        return this._isMain;
     }
 
     setIsMain(isMain = true) {
         as(isMain, Boolean);
-        this.#isMain = isMain;
+        this._isMain = isMain;
         return this;
     }
 
-    getUnit() { return Unit.fromName(this.#unit); }
+    getUnit() { return Unit.fromName(this._unit); }
 
     setUnit(unit) {
         as(unit, String);
-        this.#unit = unit;
+        this._unit = unit;
     }
 
     getCount() {
-        return this.#count;
+        return this._count;
     }
     
     setCount(count) {
         as(count, Number);
-        this.#count = count;
+        this._count = count;
     }
 
     addAction(action) {
@@ -124,7 +128,7 @@ class Build extends Action {
         const s = unit.getCost().supply * this.getCount();
 
         // Add unit to the list
-        simulation.units.push(this.#unit);
+        simulation.units.push(this._unit);
 
         // Update max. supply (max. supply is added only when unit is finished contrarly to unit supply cost that is added when unit is started instantly)
 
@@ -182,4 +186,24 @@ class Build extends Action {
 
         return true;
     }
+    
+    static fromJSON(json, main = false) {
+        const build = new Build(parseTime(json.time), json.unit, json.count || 1);
+        let i;
+    
+        build.setIsMain(main);
+    
+        if(json.actions !== undefined) {
+            for(i = 0; i < json.actions.length; i++) {
+                build.addAction(Action.fromJSON(json.actions[i]));
+            }
+        }
+    
+        return build;
+    };
 }
+
+ActionFactory.registerAction('build', Build.fromJSON);
+ActionFactory.registerAction('main', function(json) {
+    return Build.fromJSON(json, true);
+});

@@ -1,11 +1,14 @@
-export { BuildOrderView };
+import { as, abstract } from '../type-checker.mjs';
+import { parseTime, formatTime } from '../time.mjs';
+import BuildOrder from './build-order.mjs';
+import Build from './action/build.mjs';
 
 /**
  *  Render a Build Order into a HTML view
  * Use <table> element
  */
 
-class BuildOrderView {
+export default class BuildOrderView {
     constructor(bo) {
         as(bo, BuildOrder);
         this.bo = bo;
@@ -96,6 +99,7 @@ class BuildOrderView {
     // After that, the cell should be placed in the right timing column.
     createCell(action) {
         if(action.getDuration() > 0) {
+            const bo = this.bo;
             const $td = $('<td>')
                 .attr('colspan', action.getDuration())
                 .attr('rowspan', 1)
@@ -107,6 +111,7 @@ class BuildOrderView {
             // Add remove Icon
             //$td.attr('data-uuid', action.uuid);
 
+
             $td.append(
 
                 $(`
@@ -116,7 +121,7 @@ class BuildOrderView {
                 `)
                 
                     .click(function() {
-                        this.bo.removeAction(action);
+                        bo.removeAction(action);
                     })
             );
 

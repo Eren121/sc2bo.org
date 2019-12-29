@@ -1,13 +1,13 @@
-export { Action };
+import ActionFactory from './factory.mjs';
+import { as, abstract } from '../../type-checker.mjs';
+import UUID from '../../uuid.mjs';
 
 /**
  * Represent an Action in the Build Order:
  * Can be remove units from gaz, build an unit,
  * For terran only lift an add-on...
  */
-class Action {
-    #time = 0;
-
+export default class Action {
     constructor(time) {
         abstract(new.target, Action);
         this.uuid = UUID.next();
@@ -16,12 +16,12 @@ class Action {
     }
 
     getTime() {
-        return this.#time;
+        return this._time;
     }
 
     setTime(time) {
         as(time, Number);
-        this.#time = time;
+        this._time = time;
     }
 
     /**
@@ -31,7 +31,7 @@ class Action {
      * all units are finished.
      */
     getCompleteTiming() {
-        return this.#time;
+        return this._time;
     }
 
     // By default instant action duration of one second.
@@ -45,4 +45,15 @@ class Action {
     // Trigger in the simulation when the action is started / and or finished
     started(simulation) {}
     completed(simulation) {}
+    
+    static fromJSON(json) {
+        let a = json.action || 'build';
+    
+        // By default, it's build an unit
+        // Because this is the center of a build order
+        // Some build orders have only this action
+        // But a build order has no sense without this action
+
+        return ActionFactory.Build(a, json);
+    };
 }

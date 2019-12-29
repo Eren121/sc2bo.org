@@ -42,24 +42,13 @@
             </div>
         </div>
         <div class="row mt-4">
-            <div class="col-1" id="timeline">
-
+            <div class="col-1" id="simulation-info">
+            </div>
+            <div class='col-8'>
                 <!-- Percent slider, 'max' highest value to have maximum precision (can be approximative to < one second) -->
                 <!-- Also have less range is easier for input at keyboard, because arrows will move by one
                      If max is ten million, keyboard press will do nothin and we will must wait a very long time to see a modification
                 -->
-                <div class="form">
-                    <p class="form-group">
-                        <div>Time: <span class="time"></span></div>
-                        <div>Minerals: <span class="mineral"></span></div>
-                        <div>Gas: <span class="gas"></span></div>
-                        <div>Harvesters at mineral: <span class="mineral_harvesters"></span></div>
-                        <div>Harvesters at gas: <span class="gas_harvesters"></span></div>
-                        <div>Suply: <span class="supply"></span>/<span class="max_supply"></span></div>
-                    </p>
-                </div>
-            </div>
-            <div class='col-8'>
                 <input type="range" min="0" max="100" class="w-100" class="form-control-range" id="timeline-slider-range">
                 <table class='table table-dark' style="table-layout: fixed;"></table>
             </div>

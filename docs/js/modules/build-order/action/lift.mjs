@@ -1,6 +1,8 @@
-export { Lift };
+import ActionFactory from './factory.mjs';
+import Action from './action.mjs';
+import { parseTime } from '../../time.mjs';
 
-class Lift extends Action {
+export default class Lift extends Action {
     constructor(time) {
         super(time);
     }
@@ -9,3 +11,7 @@ class Lift extends Action {
         return "Lift";
     }
 }
+
+ActionFactory.registerAction('lift', function(json) {
+    return new Lift(parseTime(json.time));
+});

@@ -1,4 +1,8 @@
-export { Event, StartActionEvent, CompletedActionEvent, Simulation };
+import BuildOrder from '../build-order.mjs';
+import { as } from '../../type-checker.mjs';
+import StartActionEvent from './event-started.mjs';
+import CompletedActionEvent from './event-completed.mjs';
+import Unit from '../unit.mjs';
 
 /**
  * A build order is static, it's data that don' change
@@ -6,53 +10,19 @@ export { Event, StartActionEvent, CompletedActionEvent, Simulation };
  * To know if the build order is possible, trying to be as close to in-game as possible
  */
 
- // Represents an Event in the simulation.
- // Each action has a begining and an end, also the Event can bo of two sort: a begin event or an end event.
- class Event {
-    constructor(action, time) {
-        as(action, Action);
-        abstract(new.target, Event);
-        this.action = action;
-        this.time = time;
-    }
-
-    trigger(simulation) {
-        throw new TypeError("Event::trigger() not implemented: Derived Class does not implemented abstract method Event::trigger() of abstract class Event");
-    }
- }
-
- class StartActionEvent extends Event {
-    constructor(action) {
-        super(action, action.getTime());
-    }
-
-    trigger(simulation) {
-        this.action.started(simulation);
-    }
- }
-
- class CompletedActionEvent extends Event {
-    constructor(action) {
-        super(action, action.getTime() + action.getDuration());
-    }
-
-    trigger(simulation) {
-        this.action.completed(simulation);
-    }
- }
-
-class Simulation {
+export default class Simulation {
     constructor(bo) {
         as(bo, BuildOrder);
 
         this.bo = bo;
         this.time = 0;                          // Current second count
-        this.mineral = 0;                      // Current minerals count
+        this.mineral = 0;                       // Current minerals count
         this.gas = 0;                           // Current gas count
-        this.supply = 0;                       // Current supply count
-        this.max_supply = 0;                   // Current maximum supply
-        this.mineral_harvesters = 0;           // Current harvesters at minerals
+        this.supply = 0;                        // Current supply count
+        this.max_supply = 0;                    // Current maximum supply
+        this.mineral_harvesters = 0;            // Current harvesters at minerals
         this.gas_harvesters = 0;                // Current harvesters at gas
+        this.mineral_income = 0;                // Mineral per minut
         this.units = [];                        // All units at this time of the build order, like: ["SCV", "Barracks", "Reaper", "Marine", ...] array of string
     }
 
@@ -132,6 +102,7 @@ class Simulation {
         this.gas = 0;
         this.mineral_harvesters = 12;
         this.gas_harvesters = 0;
+        this.mineral_income = 0;
         this.units = [];
         
         // Priority queue of all actions
@@ -206,7 +177,7 @@ class Simulation {
 
         if(this.mineral_harvesters <= 16) {
             rate = 45.0 / 60.0;
-            rate = 0.85;
+            //rate = 0.85;
         } else {
             rate = 40.0 / 60.0;
         }
@@ -214,15 +185,17 @@ class Simulation {
         // https://liquipedia.net/starcraft2/Resources
         // https://tl.net/forum/starcraft-2/501306-comprehensive-lotv-production-spreadsheet
         const gasRate = 0.89;
+        const mineral = this.mineral;
 
         this.mineral += this.mineral_harvesters * rate; // A mineral worker 40. min. per minute
         this.gas += this.gas_harvesters * gasRate; // A gas worker 38. gaz per minute
 
-
         // Mules = count of Orbital Commands
         const countOfOrbitals = this.units.filter(u => u === "Orbital Command").length;
         this.mineral += countOfOrbitals * rate * 3.75;
-        
+
+        this.mineral_income = (this.mineral - mineral) * 60.0; // mineral per minut
+
         // Update time
 
         this.time++;

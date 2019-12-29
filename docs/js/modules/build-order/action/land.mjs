@@ -1,21 +1,28 @@
-export { Land };
+import ActionFactory from './factory.mjs';
+import Action from './action.mjs';
+import { parseTime } from '../../time.mjs';
+import { as } from '../../type-checker.mjs';
 
-class Land extends Action {
-    #unit;
+export default class Land extends Action {
+    _unit;
 
     constructor(time, unit) {
         super(time);
         this.setUnit(unit);
     }
 
-    getUnit() { return this.#unit; }
+    getUnit() { return this._unit; }
 
     setUnit(unit) {
         as(unit, String);
-        this.#unit = unit;
+        this._unit = unit;
     }
 
     getDescription() {
         return "Land";
     }
 }
+
+ActionFactory.registerAction('land', function(json) {
+    return new Land(parseTime(json.time), json.unit);
+});

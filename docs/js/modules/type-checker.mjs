@@ -1,30 +1,24 @@
-export { Race, as, abstract };
-
-class Race {}
+export { as, abstract };
 
 function as(x, typeName, condition = true) {
     let ok = false;
 
-    if(typeName === Race) {
-        ok = isRace(x);
+    if(typeof x === 'object') {
+        ok =  x instanceof typeName;
     } else {
-        if(typeof x === 'object') {
-            ok =  x instanceof typeName;
-        } else {
-            switch(typeName) {
-                case String:
-                    ok = (typeof x === 'string');
-                    break;
-                case Number:
-                    ok = (typeof x === 'number');
-                    break;
-                case Boolean:
-                    ok = (typeof x === 'boolean');
-                    break;
-                default:
-                    ok = false;
-                    break;
-            }
+        switch(typeName) {
+            case String:
+                ok = (typeof x === 'string');
+                break;
+            case Number:
+                ok = (typeof x === 'number');
+                break;
+            case Boolean:
+                ok = (typeof x === 'boolean');
+                break;
+            default:
+                ok = false;
+                break;
         }
     }
 

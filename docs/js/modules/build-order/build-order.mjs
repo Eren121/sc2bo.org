@@ -1,6 +1,15 @@
-export { BuildOrder, Unit };
 import { Observable } from '../observer.mjs';
 import { Unit } from './unit.mjs';
+import { TERRAN, Race } from './race.mjs';
+import { as, abstract } from '../type-checker.mjs';
+
+/**
+ * Each import will register an action: it is required even if the code don't use it explicitly.
+ */
+import Action from './action/action.mjs';
+import Build from './action/build.mjs';
+import Land from './action/land.mjs';
+import Lift from './action/lift.mjs';
 
 /**
  * Representation of a Build Order:
@@ -9,7 +18,7 @@ import { Unit } from './unit.mjs';
  * That are not built from any building, that is most buildings excluding
  * add-ons and main start building.
  */
-class BuildOrder extends Observable {
+export default class BuildOrder extends Observable {
     _name = "";
     _author = "";
     _date = new Date();
@@ -68,10 +77,6 @@ class BuildOrder extends Observable {
         this._actions.push(action);
     }
 
-    removeAction(action) {
-        
-    }
-
     setName(name) {
         as(name, String);
         this._name = name;
@@ -87,10 +92,7 @@ class BuildOrder extends Observable {
     }
 
     setRace(race) {
-        if(!isRace(race)) {
-            throw new TypeError("race is not an instance of Race");
-        }
-
+        as(race, Race);
         this._race = race;
     }
 
@@ -153,7 +155,9 @@ class BuildOrder extends Observable {
      * Tow levels: one for the building and one for the unit normally.
      * The visit order is unspecified: the json can be written not in order of the timing of the timings.
      *
-     * @param callback function(action: Action): void
+     * @param callback function(action: Action, parent: array, i: int): boolean
+     *  parent is the where the value is stored at the key i.
+     *  if the callback returns false, the visit is stopped.
      */
     visitActions(callback) {
         let i;
@@ -161,17 +165,25 @@ class BuildOrder extends Observable {
 
         for(i = 0; i < this._actions.length; i++) {
             a = this._actions[i];
-            this._visitAction(a, callback);
+            
+            if(this._visitAction(a, this._actions, i, callback) === false) {
+                return false;
+            }
         }
     }
 
-    _visitAction(action, callback) {
-
-        callback(action);
+    _visitAction(action, parent, key, callback) {
+        if(callback(action, parent, key) === false) {
+            return false;
+        }
 
         if(action instanceof Build) {
-            this._visitBuild(action, callback);
-        } 
+            if(this._visitBuild(action, callback) === false) {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     _visitBuild(build, callback) {
@@ -181,7 +193,60 @@ class BuildOrder extends Observable {
 
         for(i = 0; i < actions.length; i++) {
             a = actions[i];
-            this._visitAction(a, callback);
+            
+            if(this._visitAction(a, actions, i, callback) === false) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    removeAction(action) {
+        let found = false;
+        this.visitActions(function(a, array, i) {
+            if(a.uuid === action.uuid) {
+                array.splice(i, 1);
+                found = true;
+                return false;
+            }
+
+            return true;
+        });
+
+        if(!found) {
+            console.error('Action to delete not found in the build order');
+        } else {
+            this.notify('change');
         }
     }
+
+    static fromJSON(json) {
+        const bo = new BuildOrder;
+        let i;
+    
+        if(json.name !== undefined) {
+            bo.setName(json.name);
+        }
+        if(json.author !== undefined) {
+            bo.setAuthor(json.author);
+        }
+        if(json.date !== undefined) {
+            bo.setDate(new Date(json.date));
+        }
+        if(json.race !== undefined) {
+            bo.setRace(Race.fromName(json.race));
+        }
+        if(json.type !== undefined) {
+            bo.setType(json.type);
+        }
+    
+        if(json.actions !== undefined) {
+            for(i = 0; i < json.actions.length; i++) {
+                bo.addAction(Action.fromJSON(json.actions[i]));
+            }
+        }
+    
+        return bo;
+    };
 }

@@ -1,10 +1,11 @@
-export { UNITS, Unit };
+export { Unit };
 import { as, abstract } from '../type-checker.mjs';
+import { Race } from './race.mjs';
 
 // All units that must be loaded into the database of available units
 const UNITS = {};
 
-class Unit {
+export default class Unit {
     constructor(name, race, type, cost, parent) {
         as(name, String);
         as(race, Race);
@@ -47,42 +48,35 @@ class Unit {
             return UNITS[name];
         }
     }
+
+    static preloadfromJSON(json) {
+        let i, j, u;
+        UNITS.array = []; // Units as an array
+    
+        for(i = 0; i < json.length; i++) {
+            j = json[i];
+            u = new Unit(j.unit, Race.fromName(j.race), j.type || 'generic', j.cost, j.parent || '');
+            UNITS[j.unit] = u;
+            UNITS.array.push(u);
+        }
+    };
+
+    // Load all units into a select
+    static loadInto($select) {
+        const array = UNITS.array;
+        let i;
+        let u;
+
+        $select.empty();
+
+        for(i = 0; i < array.length; i++) {
+            u = array[i];
+
+            $select.append(
+                $('<option>')
+                    .val(u.getName())
+                    .text(u.getName())
+            );
+        }
+    };
 }
-
-Unit.preload = function(url, callback) {
-    $.getJSON(url, function(json) {
-        Unit.fromJSON(json);
-        callback();
-    });
-};
-
-// Load all units into a select
-Unit.loadInto = function($select) {
-    let i;
-    let u;
-
-    $select.empty();
-
-    for(i = 0; i < UNITS.array.length; i++) {
-        u = UNITS.array[i];
-
-        $select.append(
-            $('<option>')
-                .val(u.getName())
-                .text(u.getName())
-        );
-    }
-};
-
-Unit.fromJSON = function(json) {
-    let i, j, u;
-
-    UNITS.array = []; // Units as an array
-
-    for(i = 0; i < json.length; i++) {
-        j = json[i];
-        u = new Unit(j.unit, j.race, j.type || 'generic', j.cost, j.parent || '');
-        UNITS[j.unit] = u;
-        UNITS.array.push(u);
-    }
-};
